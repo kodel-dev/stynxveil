@@ -1,0 +1,162 @@
+// packages/database/prisma/schema.prisma
+
+generator client {
+provider = "prisma-client-js"
+}
+
+datasource db {
+provider = "postgresql"
+url      = env("DATABASE_URL")
+}
+
+// === ENUMS ===
+enum Role {
+USER
+MODERATOR
+ADMIN
+}
+
+enum ContentSource {
+LOCAL       // Komik yang diupload sendiri oleh admin
+PROVIDER_A  // Komik dari API eksternal A
+PROVIDER_B  // Komik dari API eksternal B
+}
+
+enum ComicStatus {
+ONGOING
+COMPLETED
+HIATUS
+CANCELLED
+}
+
+// === TABEL PENGGUNA ===
+model User {
+id            String    @id @default(uuid())
+email         String    @unique
+passwordHash  String?   // Bisa null jika login pakai Google/Discord
+role          Role      @default(USER)
+name          String?
+avatarUrl     String?
+
+createdAt     DateTime  @default(now())
+updatedAt     DateTime  @updatedAt
+
+// Relasi
+bookmarks     Bookmark[]
+history       ReadingHistory[]
+comments      Comment[]
+}
+
+// === TABEL KOMIK ===
+model Comic {
+id               String        @id @default(uuid())
+source           ContentSource @default(LOCAL)
+externalId       String?       // ID dari API eksternal (null jika lokal)
+
+title            String
+slug             String        @unique // Untuk URL SEO (contoh: /comic/solo-leveling)
+alternativeNames String[]
+description      String?
+coverUrl         String        // URL ke Cloudflare R2 atau eksternal
+status           ComicStatus   @default(ONGOING)
+type             String        // Manga, Manhwa, Manhua, dll
+
+rating           Float         @default(0.0)
+views            Int           @default(0)
+
+createdAt        DateTime      @default(now())
+updatedAt        DateTime      @updatedAt
+
+// Relasi
+chapters         Chapter[]
+bookmarks        Bookmark[]
+history          ReadingHistory[]
+comments         Comment[]
+genres           Genre[]       // Many-to-many
+authors          Author[]      // Many-to-many
+
+// Mencegah duplikasi data komik dari provider eksternal yang sama
+@@unique([source, externalId])
+// Index untuk mempercepat pencarian dan pengurutan
+@@index([slug])
+@@index([views(sort: Desc)])
+}
+
+// === TABEL CHAPTER ===
+model Chapter {
+id          String   @id @default(uuid())
+comicId     String
+comic       Comic    @relation(fields: [comicId], references: [id], onDelete: Cascade)
+
+externalId  String?  // ID chapter dari API eksternal (jika ada)
+chapterNum  Float    // Menggunakan Float karena ada chapter 1.5, dll
+title       String?
+images      String[] // Array URL gambar chapter (R2 atau eksternal)
+
+createdAt   DateTime @default(now())
+updatedAt   DateTime @updatedAt
+
+// Relasi
+history     ReadingHistory[]
+
+// Satu komik tidak boleh punya nomor chapter yang sama
+@@unique([comicId, chapterNum])
+@@index([comicId])
+}
+
+// === TABEL KATEGORI & METADATA ===
+model Genre {
+id     String  @id @default(uuid())
+name   String  @unique
+slug   String  @unique
+comics Comic[]
+}
+
+model Author {
+id     String  @id @default(uuid())
+name   String
+role   String  @default("AUTHOR") // AUTHOR atau ARTIST
+comics Comic[]
+}
+
+// === TABEL FITUR PENGGUNA ===
+model Bookmark {
+id        String   @id @default(uuid())
+userId    String
+user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+comicId   String
+comic     Comic    @relation(fields: [comicId], references: [id], onDelete: Cascade)
+
+createdAt DateTime @default(now())
+
+@@unique([userId, comicId])
+}
+
+model ReadingHistory {
+id           String   @id @default(uuid())
+userId       String
+user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+comicId      String
+comic        Comic    @relation(fields: [comicId], references: [id], onDelete: Cascade)
+chapterId    String
+chapter      Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+progressPage Int      @default(0) // Halaman terakhir dibaca
+updatedAt    DateTime @updatedAt
+
+@@unique([userId, comicId]) // Hanya menyimpan 1 riwayat chapter terakhir per komik
+}
+
+model Comment {
+id        String   @id @default(uuid())
+content   String
+
+userId    String
+user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+comicId   String
+comic     Comic    @relation(fields: [comicId], references: [id], onDelete: Cascade)
+
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+}
