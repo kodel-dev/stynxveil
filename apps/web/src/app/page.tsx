@@ -2,18 +2,17 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Search, Flame, Clock, Star, Eye, ChevronRight, ChevronLeft, Menu, BookMarked, User, PlayCircle, Info, MessageSquare, Heart, Trophy, BookOpen, Gem, MessageCircle } from 'lucide-react';
+import { Search, Flame, Clock, Star, Eye, ChevronRight, ChevronLeft, Menu, BookMarked, User, PlayCircle, Info, MessageSquare, Heart, Trophy } from 'lucide-react';
 import Link from 'next/link';
 
-import { 
-  hotComics, 
-  latestUpdates, 
-  popularComics, 
-  topComments, 
-  communityLeaders, 
-  genresList, 
-  initialHeroSlides 
-} from '../data/dummy';
+import {
+  topComments,
+  communityLeaders,
+  genresList,
+  initialHeroSlides,
+} from "../data/dummy";
+
+import { useHome } from "@/hooks/useHome";
 
 const formatViews = (views: number) => {
   if (!views) return '0';
@@ -60,12 +59,21 @@ const getFlagSvg = (format: string) => {
 };
 
 export default function HomePage() {
+  // ---------------------------------------------------------------------------
+  // 1. DEKLARASI HOOKS UTAMA
+  // ---------------------------------------------------------------------------
+  const { home, loading, error } = useHome();
+
   const [heroSlides] = useState(initialHeroSlides);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const slideIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const hotSliderRef = useRef<HTMLDivElement>(null);
 
+  // ---------------------------------------------------------------------------
+  // 2. LOGIC / HANDLERS
+  // ---------------------------------------------------------------------------
   const startAutoSlide = () => {
     if (slideIntervalRef.current) clearInterval(slideIntervalRef.current);
     slideIntervalRef.current = setInterval(() => {
@@ -95,7 +103,6 @@ export default function HomePage() {
     startAutoSlide();
   };
 
-  const hotSliderRef = useRef<HTMLDivElement>(null);
   const scrollHot = (direction: 'left' | 'right') => {
     if (hotSliderRef.current) {
       const { scrollLeft, clientWidth } = hotSliderRef.current;
@@ -107,12 +114,31 @@ export default function HomePage() {
     }
   };
 
+  // ---------------------------------------------------------------------------
+  // 3. EARLY RETURNS (SETELAH SEMUA HOOK DIEKSEKUSI)
+  // ---------------------------------------------------------------------------
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-[#0f0f11] text-purple-400 font-medium">
+        Memuat Stynxveil...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-screen text-red-500 font-medium bg-[#0f0f11]">
+        {error}
+      </div>
+    );
+  }
+
   const activeSlide = heroSlides[currentSlide] || heroSlides[0];
 
   return (
     <div className="min-h-screen bg-[#0f0f11] text-zinc-300 font-sans">
       
-      {/* 1. NAVBAR */}
+      {/* NAVBAR */}
       <nav className="sticky top-0 z-50 bg-[#16151a]/95 backdrop-blur-sm border-b border-zinc-800 shadow-md">
         <div className="max-w-[1400px] mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -152,9 +178,8 @@ export default function HomePage() {
         </div>
       </nav>
 
-      {/* 2. HERO SLIDER UTAMA (DIPERBAIKI: Overflow Visible, Ke Atas, Tanpa Shadow Kotak, & Blur di Kaki) */}
+      {/* HERO SLIDER */}
       <div className="relative w-full max-w-[1400px] mx-auto my-6 px-4 group">
-        {/* Menggunakan overflow-visible agar karakter bisa keluar card dengan mulus tanpa kotak */}
         <div className="relative w-full h-[380px] md:h-[420px] rounded-2xl border border-purple-500/20 bg-[#0c0b0e] overflow-visible shadow-lg">
           
           <button onClick={prevSlide} className="absolute left-3 top-1/2 -translate-y-1/2 z-50 bg-black/60 hover:bg-black/90 text-white p-2 rounded-full backdrop-blur-md border border-zinc-700/50 transition opacity-0 group-hover:opacity-100 cursor-pointer">
@@ -164,15 +189,12 @@ export default function HomePage() {
             <ChevronRight className="w-5 h-5" />
           </button>
 
-          {/* BACKGROUND IMAGE DENGAN BORDER RADIUS */}
           <div className="absolute inset-0 z-0 overflow-hidden rounded-2xl pointer-events-none">
             <img src={activeSlide?.background_image} alt={activeSlide?.title} className="w-full h-full object-cover opacity-40 scale-105 transition-all duration-700" />
             <div className="absolute inset-0 bg-gradient-to-r from-[#0c0b0e] via-[#0c0b0e]/90 to-transparent" />
           </div>
 
-          {/* KONTEN TEKS KIRI */}
           <div className="relative z-10 w-full h-full grid grid-cols-1 md:grid-cols-12 items-center px-6 md:px-12 overflow-visible">
-            
             <div className="md:col-span-7 flex flex-col justify-center z-20 pr-0 md:pr-4">
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 <div className="inline-flex items-center gap-1 bg-[#1e1935] text-[#c084fc] border border-[#a855f7]/40 text-xs font-bold px-2.5 py-0.5 rounded-md uppercase tracking-wider backdrop-blur-md">
@@ -207,22 +229,19 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* KARAKTER KANAN: DI-KEATASKAN & DIBERIKAN EFEK FADE/BLUR DI KAKI */}
             <div className="md:col-span-5 absolute right-4 md:right-10 top-0 bottom-0 h-full flex items-end justify-end z-40 overflow-visible pointer-events-none">
               <div className="relative w-[340px] md:w-[460px] h-full flex items-end justify-end overflow-visible">
                 <img 
                   src={activeSlide?.chara_image} 
                   alt={activeSlide?.title} 
-                  className="absolute right-0 bottom-[-10px] top-[-50px] md:top-[-70px] w-auto h-[130%]} max-w-none object-contain transition-all duration-700 select-none"
+                  className="absolute right-0 bottom-[-10px] top-[-50px] md:top-[-70px] w-auto h-[130%] max-w-none object-contain transition-all duration-700 select-none"
                   style={{
-                    // Efek fade/blur gradasi halus di bagian bawah kaki agar menyatu dengan background
                     maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 100%)',
                     WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 100%)'
                   }}
                 />
               </div>
             </div>
-
           </div>
 
           <div className="absolute bottom-4 left-6 z-50 flex gap-2">
@@ -234,14 +253,13 @@ export default function HomePage() {
               />
             ))}
           </div>
-
         </div>
       </div>
 
       {/* MAIN CONTAINER */}
       <main className="max-w-[1400px] mx-auto px-4 pb-12">
         
-        {/* 3. HOT COMICS BANNER */}
+        {/* HOT COMICS BANNER */}
         <section className="mb-10 relative">
           <div className="flex items-center justify-between border-b border-purple-900/30 pb-2 mb-4">
             <div className="flex items-center gap-2">
@@ -255,41 +273,48 @@ export default function HomePage() {
           </div>
           
           <div ref={hotSliderRef} className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4 pt-1 px-1">
-            {hotComics.map((comic) => (
-              <Link href={`/comic/${comic.manga_id}`} key={comic.manga_id} className="group relative rounded-lg overflow-hidden bg-[#16151a] border border-zinc-800 hover:border-purple-500/50 transition duration-300 w-[140px] sm:w-[160px] md:w-[180px] flex-none shadow-lg flex flex-col">
-                <div className="aspect-[2/3] w-full relative bg-zinc-900 overflow-hidden">
-                  <img src={comic.cover_portrait || comic.cover} alt={comic.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-                  
-                  <div className="absolute top-2 left-2 flex items-center gap-1 drop-shadow-md">
-                    {getFlagSvg(comic.format)}
-                  </div>
-                  
-                  <div className="absolute top-2 right-2 text-[9px] font-bold px-1.5 py-0.5 rounded shadow-md backdrop-blur-sm bg-zinc-600/90 text-white">
-                    {comic.type}
-                  </div>
-
-                  {comic.rating && (
-                    <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/80 backdrop-blur-sm text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded text-white border border-zinc-700/50">
-                      <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" /> {comic.rating}
+            {home?.recommended && home.recommended.length > 0 ? (
+              home.recommended.map((comic) => (
+                <Link href={`/comic/${comic.manga_id}`} key={comic.manga_id} className="group relative rounded-lg overflow-hidden bg-[#16151a] border border-zinc-800 hover:border-purple-500/50 transition duration-300 w-[140px] sm:w-[160px] md:w-[180px] flex-none shadow-lg flex flex-col">
+                  <div className="aspect-[2/3] w-full relative bg-zinc-900 overflow-hidden">
+                    <img src={comic.cover_portrait || comic.cover} alt={comic.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                    
+                    <div className="absolute top-2 left-2 flex items-center gap-1 drop-shadow-md">
+                      {getFlagSvg(comic.format)}
                     </div>
-                  )}
-                </div>
+                    
+                    <div className="absolute top-2 right-2 text-[9px] font-bold px-1.5 py-0.5 rounded shadow-md backdrop-blur-sm bg-zinc-600/90 text-white">
+                      {comic.type}
+                    </div>
 
-                <div className="p-2.5 flex flex-col flex-1">
-                  <h3 className="font-semibold text-white text-xs sm:text-sm line-clamp-2 sm:line-clamp-1 group-hover:text-purple-400 transition drop-shadow-md leading-tight sm:leading-normal">
-                    {comic.title}
-                  </h3>
-                  <div className="flex justify-between items-center text-[10px] sm:text-xs text-zinc-400 mt-auto pt-1.5 font-medium">
-                    <span className="text-purple-400 font-bold">Ch. {comic.latest_chapter}</span>
-                    <span className="flex items-center gap-1"><Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> {formatViews(comic.views)}</span>
+                    {comic.rating && (
+                      <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/80 backdrop-blur-sm text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded text-white border border-zinc-700/50">
+                        <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" /> {comic.rating}
+                      </div>
+                    )}
                   </div>
-                </div>
-              </Link>
-            ))}
+
+                  <div className="p-2.5 flex flex-col flex-1">
+                    <h3 className="font-semibold text-white text-xs sm:text-sm line-clamp-2 sm:line-clamp-1 group-hover:text-purple-400 transition drop-shadow-md leading-tight sm:leading-normal">
+                      {comic.title}
+                    </h3>
+                    <div className="flex justify-between items-center text-[10px] sm:text-xs text-zinc-400 mt-auto pt-1.5 font-medium">
+                      <span className="text-purple-400 font-bold">Ch. {comic.latest_chapter}</span>
+                      <span className="flex items-center gap-1"><Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> {formatViews(comic.views)}</span>
+                    </div>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div className="w-full py-8 flex flex-col items-center justify-center border border-dashed border-zinc-800 rounded-lg text-zinc-500">
+                <Flame className="w-6 h-6 text-zinc-700 mb-2" />
+                <p className="text-xs">Belum ada komik terpanas bulan ini.</p>
+              </div>
+            )}
           </div>
         </section>
 
-        {/* 4. DUA KOLOM LAYOUT */}
+        {/* DUA KOLOM LAYOUT */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           
           {/* KOLOM KIRI (Update Terbaru) */}
@@ -307,61 +332,69 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-              {latestUpdates.map((comic) => (
-                <div key={comic.manga_id} className="bg-[#16151a] rounded-md border border-zinc-800/80 overflow-hidden hover:border-purple-500/50 transition group flex flex-col h-full shadow-md w-full">
-                  <Link href={`/comic/${comic.manga_id}`} className="block relative aspect-[2/3] w-full overflow-hidden bg-zinc-900">
-                    <img src={comic.cover_portrait || comic.cover} alt={comic.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-                    
-                    <div className="absolute top-1.5 left-1.5 flex items-center gap-1 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
-                      {getFlagSvg(comic.format)}
-                    </div>
-
-                    <div className="absolute top-1.5 right-1.5">
-                      <span className="text-[9px] font-bold text-white px-1.5 py-0.5 rounded shadow-md backdrop-blur-sm bg-zinc-600/90">
-                        {comic.type}
-                      </span>
-                    </div>
-
-                    {comic.rating && (
-                      <div className="absolute bottom-1.5 right-1.5 flex items-center gap-1 bg-black/80 text-[10px] font-bold px-1.5 py-0.5 rounded text-white backdrop-blur-sm border border-zinc-700/50">
-                        <Star className="w-2.5 h-2.5 text-yellow-400 fill-yellow-400" /> {comic.rating}
+              {home?.latest && home.latest.length > 0 ? (
+                home.latest.map((comic) => (
+                  <div key={comic.manga_id} className="bg-[#16151a] rounded-md border border-zinc-800/80 overflow-hidden hover:border-purple-500/50 transition group flex flex-col h-full shadow-md w-full">
+                    <Link href={`/comic/${comic.manga_id}`} className="block relative aspect-[2/3] w-full overflow-hidden bg-zinc-900">
+                      <img src={comic.cover_portrait || comic.cover} alt={comic.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                      
+                      <div className="absolute top-1.5 left-1.5 flex items-center gap-1 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
+                        {getFlagSvg(comic.format)}
                       </div>
-                    )}
-                  </Link>
-                  
-                  <div className="p-2.5 flex flex-col flex-1">
-                    <Link href={`/comic/${comic.manga_id}`}>
-                      <h3 className="font-semibold text-white text-[13px] line-clamp-2 leading-snug mb-1 group-hover:text-purple-400 transition" title={comic.title}>
-                        {comic.title}
-                      </h3>
-                    </Link>
 
-                    <div className="flex items-center gap-1 text-[10px] text-zinc-400 mb-2.5">
-                      <Eye className="w-3 h-3 text-zinc-500" />
-                      <span>{formatViews(comic.views)} pembaca</span>
-                    </div>
-                    
-                    <div className="flex flex-col gap-1 mt-auto">
-                      <Link href={`/read/${comic.manga_id}-${comic.latest_chapter}`} className="flex justify-between items-center text-[11px] bg-[#0f0f11] hover:bg-zinc-800 p-1.5 rounded border border-zinc-800 hover:border-purple-500/50 transition">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-medium text-zinc-200">Ch. {comic.latest_chapter}</span>
-                          <span className="bg-purple-600 text-white text-[8px] font-bold px-1 py-0.5 rounded animate-pulse shadow-[0_0_8px_rgba(168,85,247,0.6)]">NEW</span>
+                      <div className="absolute top-1.5 right-1.5">
+                        <span className="text-[9px] font-bold text-white px-1.5 py-0.5 rounded shadow-md backdrop-blur-sm bg-zinc-600/90">
+                          {comic.type}
+                        </span>
+                      </div>
+
+                      {comic.rating && (
+                        <div className="absolute bottom-1.5 right-1.5 flex items-center gap-1 bg-black/80 text-[10px] font-bold px-1.5 py-0.5 rounded text-white backdrop-blur-sm border border-zinc-700/50">
+                          <Star className="w-2.5 h-2.5 text-yellow-400 fill-yellow-400" /> {comic.rating}
                         </div>
-                        <span className="text-zinc-500 italic text-[9px]">{formatTimeAgo(comic.latest_chapter_time)}</span>
+                      )}
+                    </Link>
+                    
+                    <div className="p-2.5 flex flex-col flex-1">
+                      <Link href={`/comic/${comic.manga_id}`}>
+                        <h3 className="font-semibold text-white text-[13px] line-clamp-2 leading-snug mb-1 group-hover:text-purple-400 transition" title={comic.title}>
+                          {comic.title}
+                        </h3>
                       </Link>
 
-                      {comic.latest_chapter > 1 && (
-                        <Link href={`/read/${comic.manga_id}-${comic.latest_chapter - 1}`} className="flex justify-between items-center text-[11px] bg-[#0f0f11] hover:bg-zinc-800 p-1.5 rounded border border-zinc-800 hover:border-purple-500/50 transition">
+                      <div className="flex items-center gap-1 text-[10px] text-zinc-400 mb-2.5">
+                        <Eye className="w-3 h-3 text-zinc-500" />
+                        <span>{formatViews(comic.views)} pembaca</span>
+                      </div>
+                      
+                      <div className="flex flex-col gap-1 mt-auto">
+                        <Link href={`/read/${comic.manga_id}-${comic.latest_chapter}`} className="flex justify-between items-center text-[11px] bg-[#0f0f11] hover:bg-zinc-800 p-1.5 rounded border border-zinc-800 hover:border-purple-500/50 transition">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-medium text-zinc-400">Ch. {comic.latest_chapter - 1}</span>
+                            <span className="font-medium text-zinc-200">Ch. {comic.latest_chapter}</span>
+                            <span className="bg-purple-600 text-white text-[8px] font-bold px-1 py-0.5 rounded animate-pulse shadow-[0_0_8px_rgba(168,85,247,0.6)]">NEW</span>
                           </div>
-                          <span className="text-zinc-600 italic text-[9px]">1 hari lalu</span>
+                          <span className="text-zinc-500 italic text-[9px]">{formatTimeAgo(comic.latest_chapter_time)}</span>
                         </Link>
-                      )}
+
+                        {comic.latest_chapter > 1 && (
+                          <Link href={`/read/${comic.manga_id}-${comic.latest_chapter - 1}`} className="flex justify-between items-center text-[11px] bg-[#0f0f11] hover:bg-zinc-800 p-1.5 rounded border border-zinc-800 hover:border-purple-500/50 transition">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-medium text-zinc-400">Ch. {comic.latest_chapter - 1}</span>
+                            </div>
+                            <span className="text-zinc-600 italic text-[9px]">1 hari lalu</span>
+                          </Link>
+                        )}
+                      </div>
                     </div>
                   </div>
+                ))
+              ) : (
+                <div className="col-span-full py-16 flex flex-col items-center justify-center text-center bg-[#16151a] rounded-xl border border-dashed border-zinc-800">
+                  <Clock className="w-10 h-10 text-zinc-600 mb-3" />
+                  <h3 className="text-zinc-400 font-semibold text-sm">Belum ada Update Terbaru</h3>
+                  <p className="text-zinc-600 text-xs mt-1">Data komik dari server mungkin sedang kosong atau gagal dimuat.</p>
                 </div>
-              ))}
+              )}
             </div>
 
             <div className="mt-8 flex justify-center">
@@ -383,32 +416,38 @@ export default function HomePage() {
               </div>
               
               <div className="flex flex-col gap-3">
-                {popularComics.map((comic, index) => (
-                  <Link href={`/comic/${comic.manga_id}`} key={comic.manga_id} className="flex gap-3 group items-center">
-                    <div className="text-xl font-bold text-zinc-700 italic w-5 text-center group-hover:text-purple-500 transition">
-                      {index + 1}
-                    </div>
-                    <div className="w-12 h-16 shrink-0 rounded overflow-hidden relative shadow-md bg-zinc-900">
-                      <img src={comic.cover_portrait || comic.cover} alt={comic.title} className="w-full h-full object-cover group-hover:scale-110 transition duration-300" />
-                    </div>
-                    <div className="flex flex-col justify-center flex-1 min-w-0">
-                      <h3 className="text-[13px] font-semibold text-zinc-200 line-clamp-2 group-hover:text-purple-400 transition leading-tight">
-                        {comic.title}
-                      </h3>
-                      <p className="text-[10px] text-zinc-500 mt-0.5 truncate">
-                        {comic.genres.map(g => g.name).slice(0, 2).join(', ')}
-                      </p>
-                      <div className="flex items-center justify-between mt-1 text-[10px]">
-                        <span className="flex items-center gap-1 font-bold text-white">
-                          <Star className="w-2.5 h-2.5 text-yellow-400 fill-yellow-400" /> {comic.rating || '-'}
-                        </span>
-                        <span className="flex items-center gap-1 text-zinc-400">
-                          <Eye className="w-2.5 h-2.5 text-zinc-500" /> {formatViews(comic.views)}
-                        </span>
+                {home?.popular && home.popular.length > 0 ? (
+                  home.popular.map((comic, index) => (
+                    <Link href={`/comic/${comic.manga_id}`} key={comic.manga_id} className="flex gap-3 group items-center">
+                      <div className="text-xl font-bold text-zinc-700 italic w-5 text-center group-hover:text-purple-500 transition">
+                        {index + 1}
                       </div>
-                    </div>
-                  </Link>
-                ))}
+                      <div className="w-12 h-16 shrink-0 rounded overflow-hidden relative shadow-md bg-zinc-900">
+                        <img src={comic.cover_portrait || comic.cover} alt={comic.title} className="w-full h-full object-cover group-hover:scale-110 transition duration-300" />
+                      </div>
+                      <div className="flex flex-col justify-center flex-1 min-w-0">
+                        <h3 className="text-[13px] font-semibold text-zinc-200 line-clamp-2 group-hover:text-purple-400 transition leading-tight">
+                          {comic.title}
+                        </h3>
+                        <p className="text-[10px] text-zinc-500 mt-0.5 truncate">
+                          {comic.genres?.map(g => g.name).slice(0, 2).join(', ')}
+                        </p>
+                        <div className="flex items-center justify-between mt-1 text-[10px]">
+                          <span className="flex items-center gap-1 font-bold text-white">
+                            <Star className="w-2.5 h-2.5 text-yellow-400 fill-yellow-400" /> {comic.rating || '-'}
+                          </span>
+                          <span className="flex items-center gap-1 text-zinc-400">
+                            <Eye className="w-2.5 h-2.5 text-zinc-500" /> {formatViews(comic.views)}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))
+                ) : (
+                  <div className="py-6 flex flex-col items-center justify-center border border-dashed border-zinc-800 rounded-lg text-zinc-500">
+                    <p className="text-[11px]">Data populer kosong.</p>
+                  </div>
+                )}
               </div>
             </div>
 
