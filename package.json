@@ -4,8 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "dev": "pnpm --filter web dev",
+  "build": "pnpm --filter web build",
+  "start": "pnpm --filter web start"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
