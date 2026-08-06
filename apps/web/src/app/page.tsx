@@ -2,16 +2,10 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Search, Flame, Clock, Star, Eye, ChevronRight, ChevronLeft, Menu, BookMarked, User, PlayCircle, Info, MessageSquare, Heart, Trophy } from 'lucide-react';
+import { Search, Flame, Clock, Star, Eye, ChevronRight, ChevronLeft, Menu, BookMarked, User, PlayCircle, Info, MessageSquare, Heart, Trophy, ShieldCheck, Globe } from 'lucide-react';
 import Link from 'next/link';
 
-import {
-  topComments,
-  communityLeaders,
-  genresList,
-  initialHeroSlides,
-} from "../data/dummy";
-
+import { topComments, communityLeaders, genresList, initialHeroSlides } from "../data/dummy";
 import { useHome } from "@/hooks/useHome";
 
 const formatViews = (views: number) => {
@@ -22,6 +16,7 @@ const formatViews = (views: number) => {
 };
 
 const formatTimeAgo = (dateString: string) => {
+  if (!dateString) return '';
   const date = new Date(dateString);
   const now = new Date();
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
@@ -35,7 +30,7 @@ const formatTimeAgo = (dateString: string) => {
 const getFlagSvg = (format: string) => {
   if (format === 'Manga') {
     return (
-      <svg className="w-4 h-3 rounded shadow-sm overflow-hidden bg-white" viewBox="0 0 900 600">
+      <svg className="w-4 h-3 rounded shadow-sm overflow-hidden bg-white shrink-0" viewBox="0 0 900 600">
         <rect width="900" height="600" fill="#fff"/>
         <circle cx="450" cy="300" r="180" fill="#bc002d"/>
       </svg>
@@ -43,7 +38,7 @@ const getFlagSvg = (format: string) => {
   }
   if (format === 'Manhwa') {
     return (
-      <svg className="w-4 h-3 rounded shadow-sm overflow-hidden bg-white" viewBox="0 0 900 600">
+      <svg className="w-4 h-3 rounded shadow-sm overflow-hidden bg-white shrink-0" viewBox="0 0 900 600">
         <rect width="900" height="600" fill="#fff"/>
         <circle cx="450" cy="300" r="160" fill="#cd2e3a"/>
         <path d="M 450 140 A 160 160 0 0 1 450 460 A 80 80 0 0 0 450 300 A 80 80 0 1 1 450 140 Z" fill="#0047a0"/>
@@ -59,9 +54,6 @@ const getFlagSvg = (format: string) => {
 };
 
 export default function HomePage() {
-  // ---------------------------------------------------------------------------
-  // 1. DEKLARASI HOOKS UTAMA
-  // ---------------------------------------------------------------------------
   const { home, loading, error } = useHome();
 
   const [heroSlides] = useState(initialHeroSlides);
@@ -71,9 +63,6 @@ export default function HomePage() {
   const slideIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const hotSliderRef = useRef<HTMLDivElement>(null);
 
-  // ---------------------------------------------------------------------------
-  // 2. LOGIC / HANDLERS
-  // ---------------------------------------------------------------------------
   const startAutoSlide = () => {
     if (slideIntervalRef.current) clearInterval(slideIntervalRef.current);
     slideIntervalRef.current = setInterval(() => {
@@ -114,13 +103,13 @@ export default function HomePage() {
     }
   };
 
-  // ---------------------------------------------------------------------------
-  // 3. EARLY RETURNS (SETELAH SEMUA HOOK DIEKSEKUSI)
-  // ---------------------------------------------------------------------------
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-[#0f0f11] text-purple-400 font-medium">
-        Memuat Stynxveil...
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+          <p className="animate-pulse">Memuat Stynxveil...</p>
+        </div>
       </div>
     );
   }
@@ -136,7 +125,7 @@ export default function HomePage() {
   const activeSlide = heroSlides[currentSlide] || heroSlides[0];
 
   return (
-    <div className="min-h-screen bg-[#0f0f11] text-zinc-300 font-sans">
+    <div className="min-h-screen bg-[#0f0f11] text-zinc-300 font-sans selection:bg-purple-500 selection:text-white">
       
       {/* NAVBAR */}
       <nav className="sticky top-0 z-50 bg-[#16151a]/95 backdrop-blur-sm border-b border-zinc-800 shadow-md">
@@ -178,7 +167,7 @@ export default function HomePage() {
         </div>
       </nav>
 
-      {/* HERO SLIDER */}
+      {/* HERO SLIDER (DUMMY) */}
       <div className="relative w-full max-w-[1400px] mx-auto my-6 px-4 group">
         <div className="relative w-full h-[380px] md:h-[420px] rounded-2xl border border-purple-500/20 bg-[#0c0b0e] overflow-visible shadow-lg">
           
@@ -200,12 +189,8 @@ export default function HomePage() {
                 <div className="inline-flex items-center gap-1 bg-[#1e1935] text-[#c084fc] border border-[#a855f7]/40 text-xs font-bold px-2.5 py-0.5 rounded-md uppercase tracking-wider backdrop-blur-md">
                   <Star className="w-3 h-3 fill-[#c084fc]" /> {activeSlide?.rating}
                 </div>
-                {activeSlide?.badges?.map((badge, idx) => (
-                  <span 
-                    key={idx} 
-                    className="text-[10px] font-bold text-white px-2.5 py-0.5 rounded-md shadow-md uppercase tracking-wider"
-                    style={{ backgroundColor: badge.color }}
-                  >
+                {activeSlide?.badges?.map((badge: any, idx: number) => (
+                  <span key={idx} className="text-[10px] font-bold text-white px-2.5 py-0.5 rounded-md shadow-md uppercase tracking-wider" style={{ backgroundColor: badge.color }}>
                     {badge.name}
                   </span>
                 ))}
@@ -259,7 +244,7 @@ export default function HomePage() {
       {/* MAIN CONTAINER */}
       <main className="max-w-[1400px] mx-auto px-4 pb-12">
         
-        {/* HOT COMICS BANNER */}
+        {/* HOT BULAN INI (Tepat 10 Komik Terbaik) */}
         <section className="mb-10 relative">
           <div className="flex items-center justify-between border-b border-purple-900/30 pb-2 mb-4">
             <div className="flex items-center gap-2">
@@ -274,26 +259,22 @@ export default function HomePage() {
           
           <div ref={hotSliderRef} className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4 pt-1 px-1">
             {home?.recommended && home.recommended.length > 0 ? (
-              home.recommended.map((comic) => (
+              home.recommended.slice(0, 10).map((comic) => (
                 <Link href={`/comic/${comic.manga_id}`} key={comic.manga_id} className="group relative rounded-lg overflow-hidden bg-[#16151a] border border-zinc-800 hover:border-purple-500/50 transition duration-300 w-[140px] sm:w-[160px] md:w-[180px] flex-none shadow-lg flex flex-col">
                   <div className="aspect-[2/3] w-full relative bg-zinc-900 overflow-hidden">
                     <img src={comic.cover_portrait || comic.cover} alt={comic.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-                    
                     <div className="absolute top-2 left-2 flex items-center gap-1 drop-shadow-md">
                       {getFlagSvg(comic.format)}
                     </div>
-                    
                     <div className="absolute top-2 right-2 text-[9px] font-bold px-1.5 py-0.5 rounded shadow-md backdrop-blur-sm bg-zinc-600/90 text-white">
                       {comic.type}
                     </div>
-
                     {comic.rating && (
                       <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/80 backdrop-blur-sm text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded text-white border border-zinc-700/50">
                         <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" /> {comic.rating}
                       </div>
                     )}
                   </div>
-
                   <div className="p-2.5 flex flex-col flex-1">
                     <h3 className="font-semibold text-white text-xs sm:text-sm line-clamp-2 sm:line-clamp-1 group-hover:text-purple-400 transition drop-shadow-md leading-tight sm:leading-normal">
                       {comic.title}
@@ -317,91 +298,184 @@ export default function HomePage() {
         {/* DUA KOLOM LAYOUT */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           
-          {/* KOLOM KIRI (Update Terbaru) */}
-          <div className="lg:col-span-3">
-            <div className="flex items-center justify-between border-b border-purple-900/30 pb-2 mb-4">
-              <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-purple-400" />
-                <h2 className="text-lg font-bold text-white uppercase tracking-wider">Update Terbaru</h2>
-              </div>
-              <div className="flex items-center gap-4">
+          {/* KOLOM KIRI (Update Terbaru, Project, & Mirror) */}
+          <div className="lg:col-span-3 space-y-12">
+            
+            {/* 1. UPDATE TERBARU (Menampilkan 2 Tombol Chapter) */}
+            <section>
+              <div className="flex items-center justify-between border-b border-purple-900/30 pb-2 mb-4">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-purple-400" />
+                  <h2 className="text-lg font-bold text-white uppercase tracking-wider">Update Terbaru</h2>
+                </div>
                 <Link href="/daftar-komik" className="text-xs font-medium text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 px-3 py-1 rounded transition flex items-center gap-1 hover:border-purple-500 border border-transparent">
                   Lihat Semua <ChevronRight className="w-3 h-3" />
                 </Link>
               </div>
-            </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-              {home?.latest && home.latest.length > 0 ? (
-                home.latest.map((comic) => (
-                  <div key={comic.manga_id} className="bg-[#16151a] rounded-md border border-zinc-800/80 overflow-hidden hover:border-purple-500/50 transition group flex flex-col h-full shadow-md w-full">
-                    <Link href={`/comic/${comic.manga_id}`} className="block relative aspect-[2/3] w-full overflow-hidden bg-zinc-900">
-                      <img src={comic.cover_portrait || comic.cover} alt={comic.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-                      
-                      <div className="absolute top-1.5 left-1.5 flex items-center gap-1 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
-                        {getFlagSvg(comic.format)}
-                      </div>
-
-                      <div className="absolute top-1.5 right-1.5">
-                        <span className="text-[9px] font-bold text-white px-1.5 py-0.5 rounded shadow-md backdrop-blur-sm bg-zinc-600/90">
-                          {comic.type}
-                        </span>
-                      </div>
-
-                      {comic.rating && (
-                        <div className="absolute bottom-1.5 right-1.5 flex items-center gap-1 bg-black/80 text-[10px] font-bold px-1.5 py-0.5 rounded text-white backdrop-blur-sm border border-zinc-700/50">
-                          <Star className="w-2.5 h-2.5 text-yellow-400 fill-yellow-400" /> {comic.rating}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+                {home?.latest && home.latest.length > 0 ? (
+                  home.latest.map((comic) => (
+                    <div key={comic.manga_id} className="bg-[#16151a] rounded-md border border-zinc-800/80 overflow-hidden hover:border-purple-500/50 transition group flex flex-col h-full shadow-md w-full">
+                      <Link href={`/comic/${comic.manga_id}`} className="block relative aspect-[2/3] w-full overflow-hidden bg-zinc-900">
+                        <img src={comic.cover_portrait || comic.cover} alt={comic.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                        <div className="absolute top-1.5 left-1.5 flex items-center gap-1 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
+                          {getFlagSvg(comic.format)}
                         </div>
-                      )}
-                    </Link>
-                    
-                    <div className="p-2.5 flex flex-col flex-1">
-                      <Link href={`/comic/${comic.manga_id}`}>
-                        <h3 className="font-semibold text-white text-[13px] line-clamp-2 leading-snug mb-1 group-hover:text-purple-400 transition" title={comic.title}>
-                          {comic.title}
-                        </h3>
-                      </Link>
-
-                      <div className="flex items-center gap-1 text-[10px] text-zinc-400 mb-2.5">
-                        <Eye className="w-3 h-3 text-zinc-500" />
-                        <span>{formatViews(comic.views)} pembaca</span>
-                      </div>
-                      
-                      <div className="flex flex-col gap-1 mt-auto">
-                        <Link href={`/read/${comic.manga_id}-${comic.latest_chapter}`} className="flex justify-between items-center text-[11px] bg-[#0f0f11] hover:bg-zinc-800 p-1.5 rounded border border-zinc-800 hover:border-purple-500/50 transition">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-medium text-zinc-200">Ch. {comic.latest_chapter}</span>
-                            <span className="bg-purple-600 text-white text-[8px] font-bold px-1 py-0.5 rounded animate-pulse shadow-[0_0_8px_rgba(168,85,247,0.6)]">NEW</span>
+                        <div className="absolute top-1.5 right-1.5">
+                          <span className="text-[9px] font-bold text-white px-1.5 py-0.5 rounded shadow-md backdrop-blur-sm bg-zinc-600/90">
+                            {comic.type}
+                          </span>
+                        </div>
+                        {comic.rating && (
+                          <div className="absolute bottom-1.5 right-1.5 flex items-center gap-1 bg-black/80 text-[10px] font-bold px-1.5 py-0.5 rounded text-white backdrop-blur-sm border border-zinc-700/50">
+                            <Star className="w-2.5 h-2.5 text-yellow-400 fill-yellow-400" /> {comic.rating}
                           </div>
-                          <span className="text-zinc-500 italic text-[9px]">{formatTimeAgo(comic.latest_chapter_time)}</span>
-                        </Link>
-
-                        {comic.latest_chapter > 1 && (
-                          <Link href={`/read/${comic.manga_id}-${comic.latest_chapter - 1}`} className="flex justify-between items-center text-[11px] bg-[#0f0f11] hover:bg-zinc-800 p-1.5 rounded border border-zinc-800 hover:border-purple-500/50 transition">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-medium text-zinc-400">Ch. {comic.latest_chapter - 1}</span>
-                            </div>
-                            <span className="text-zinc-600 italic text-[9px]">1 hari lalu</span>
-                          </Link>
                         )}
+                      </Link>
+                      
+                      <div className="p-2.5 flex flex-col flex-1">
+                        <Link href={`/comic/${comic.manga_id}`}>
+                          <h3 className="font-semibold text-white text-[13px] line-clamp-2 leading-snug mb-1 group-hover:text-purple-400 transition" title={comic.title}>
+                            {comic.title}
+                          </h3>
+                        </Link>
+                        <div className="flex items-center gap-1 text-[10px] text-zinc-400 mb-2.5">
+                          <Eye className="w-3 h-3 text-zinc-500" />
+                          <span>{formatViews(comic.views)} pembaca</span>
+                        </div>
+                        
+                        {/* 2 Tombol Chapter (Terbaru & Sebelumnya) */}
+                        <div className="flex flex-col gap-1 mt-auto">
+                          <Link href={`/read/${comic.latest_chapter_id}`} className="flex justify-between items-center text-[11px] bg-[#0f0f11] hover:bg-zinc-800 p-1.5 rounded border border-zinc-800 hover:border-purple-500/50 transition">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-medium text-zinc-200">Ch. {comic.latest_chapter}</span>
+                              <span className="bg-purple-600 text-white text-[8px] font-bold px-1 py-0.5 rounded animate-pulse">NEW</span>
+                            </div>
+                            <span className="text-zinc-500 italic text-[9px] truncate max-w-[50px]">{formatTimeAgo(comic.latest_chapter_time)}</span>
+                          </Link>
+
+                          {comic.latest_chapter > 1 && (
+                            <Link href={`/read/${comic.manga_id}-${comic.latest_chapter - 1}`} className="flex justify-between items-center text-[11px] bg-[#0f0f11] hover:bg-zinc-800 p-1.5 rounded border border-zinc-800 hover:border-purple-500/50 transition">
+                              <span className="font-medium text-zinc-400">Ch. {comic.latest_chapter - 1}</span>
+                              <span className="text-zinc-600 italic text-[9px]">Sebelumnya</span>
+                            </Link>
+                          )}
+                        </div>
                       </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="col-span-full py-16 flex flex-col items-center justify-center text-center bg-[#16151a] rounded-xl border border-dashed border-zinc-800">
+                    <Clock className="w-10 h-10 text-zinc-600 mb-3" />
+                    <h3 className="text-zinc-400 font-semibold text-sm">Belum ada Update Terbaru</h3>
                   </div>
-                ))
-              ) : (
-                <div className="col-span-full py-16 flex flex-col items-center justify-center text-center bg-[#16151a] rounded-xl border border-dashed border-zinc-800">
-                  <Clock className="w-10 h-10 text-zinc-600 mb-3" />
-                  <h3 className="text-zinc-400 font-semibold text-sm">Belum ada Update Terbaru</h3>
-                  <p className="text-zinc-600 text-xs mt-1">Data komik dari server mungkin sedang kosong atau gagal dimuat.</p>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            </section>
 
-            <div className="mt-8 flex justify-center">
-              <button className="bg-[#16151a] hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600 text-white font-semibold py-2.5 px-8 rounded-md transition-all border border-zinc-800 hover:border-transparent text-sm w-full md:w-auto shadow-lg hover:shadow-[0_0_20px_rgba(147,51,234,0.4)] cursor-pointer">
-                Muat Lebih Banyak
-              </button>
-            </div>
+            {/* 2. KOMIK PROJECT STYNXVEIL */}
+            <section>
+              <div className="flex items-center justify-between border-b border-purple-900/30 pb-2 mb-4">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-cyan-400" />
+                  <h2 className="text-lg font-bold text-white uppercase tracking-wider">Komik Project Stynxveil</h2>
+                </div>
+                <Link href="/project" className="text-xs font-medium text-cyan-400 hover:text-white bg-cyan-950/40 hover:bg-cyan-900/60 px-3 py-1 rounded transition border border-cyan-800/50">
+                  Lihat Semua <ChevronRight className="w-3 h-3 inline" />
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+                {home?.projectComics && home.projectComics.length > 0 ? (
+                  home.projectComics.map((comic) => (
+                    <div key={`proj-${comic.manga_id}`} className="bg-[#16151a] rounded-md border border-cyan-900/40 overflow-hidden hover:border-cyan-400/60 transition group flex flex-col h-full shadow-md w-full">
+                      <Link href={`/comic/${comic.manga_id}`} className="block relative aspect-[2/3] w-full overflow-hidden bg-zinc-900">
+                        <img src={comic.cover_portrait || comic.cover} alt={comic.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                        <div className="absolute top-1.5 left-1.5">{getFlagSvg(comic.format)}</div>
+                        <div className="absolute top-1.5 right-1.5">
+                          <span className="text-[9px] font-bold text-black bg-cyan-400 px-1.5 py-0.5 rounded shadow-md uppercase">Project</span>
+                        </div>
+                        {comic.rating && (
+                          <div className="absolute bottom-1.5 right-1.5 flex items-center gap-1 bg-black/80 text-[10px] font-bold px-1.5 py-0.5 rounded text-white border border-zinc-700/50">
+                            <Star className="w-2.5 h-2.5 text-yellow-400 fill-yellow-400" /> {comic.rating}
+                          </div>
+                        )}
+                      </Link>
+                      <div className="p-2.5 flex flex-col flex-1">
+                        <Link href={`/comic/${comic.manga_id}`}>
+                          <h3 className="font-semibold text-white text-[13px] line-clamp-2 leading-snug mb-1 group-hover:text-cyan-400 transition" title={comic.title}>
+                            {comic.title}
+                          </h3>
+                        </Link>
+                        <div className="flex flex-col gap-1 mt-auto pt-2">
+                          <Link href={`/read/${comic.latest_chapter_id}`} className="flex justify-between items-center text-[11px] bg-[#0f0f11] hover:bg-zinc-800 p-1.5 rounded border border-cyan-900/30 hover:border-cyan-500 transition">
+                            <span className="font-medium text-cyan-300">Ch. {comic.latest_chapter}</span>
+                            <span className="text-zinc-500 italic text-[9px]">{formatTimeAgo(comic.latest_chapter_time)}</span>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full py-10 text-center text-zinc-500 border border-dashed border-zinc-800 rounded-lg text-xs">
+                    Tidak ada komik project saat ini (Menunggu unggahan original Anda).
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* 3. KOMIK MIRROR SHINIGAMI */}
+            <section>
+              <div className="flex items-center justify-between border-b border-purple-900/30 pb-2 mb-4">
+                <div className="flex items-center gap-2">
+                  <Globe className="w-5 h-5 text-purple-400" />
+                  <h2 className="text-lg font-bold text-white uppercase tracking-wider">Komik Mirror Shinigami</h2>
+                </div>
+                <Link href="/daftar-komik?type=mirror" className="text-xs font-medium text-purple-400 hover:text-white bg-purple-950/40 hover:bg-purple-900/60 px-3 py-1 rounded transition border border-purple-800/50">
+                  Lihat Semua <ChevronRight className="w-3 h-3 inline" />
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+                {home?.mirrorComics && home.mirrorComics.length > 0 ? (
+                  home.mirrorComics.map((comic) => (
+                    <div key={`mirror-${comic.manga_id}`} className="bg-[#16151a] rounded-md border border-purple-900/40 overflow-hidden hover:border-purple-400/60 transition group flex flex-col h-full shadow-md w-full">
+                      <Link href={`/comic/${comic.manga_id}`} className="block relative aspect-[2/3] w-full overflow-hidden bg-zinc-900">
+                        <img src={comic.cover_portrait || comic.cover} alt={comic.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                        <div className="absolute top-1.5 left-1.5">{getFlagSvg(comic.format)}</div>
+                        <div className="absolute top-1.5 right-1.5">
+                          <span className="text-[9px] font-bold text-white bg-purple-600 px-1.5 py-0.5 rounded shadow-md uppercase">Mirror</span>
+                        </div>
+                        {comic.rating && (
+                          <div className="absolute bottom-1.5 right-1.5 flex items-center gap-1 bg-black/80 text-[10px] font-bold px-1.5 py-0.5 rounded text-white border border-zinc-700/50">
+                            <Star className="w-2.5 h-2.5 text-yellow-400 fill-yellow-400" /> {comic.rating}
+                          </div>
+                        )}
+                      </Link>
+                      <div className="p-2.5 flex flex-col flex-1">
+                        <Link href={`/comic/${comic.manga_id}`}>
+                          <h3 className="font-semibold text-white text-[13px] line-clamp-2 leading-snug mb-1 group-hover:text-purple-400 transition" title={comic.title}>
+                            {comic.title}
+                          </h3>
+                        </Link>
+                        <div className="flex flex-col gap-1 mt-auto pt-2">
+                          <Link href={`/read/${comic.latest_chapter_id}`} className="flex justify-between items-center text-[11px] bg-[#0f0f11] hover:bg-zinc-800 p-1.5 rounded border border-purple-900/30 hover:border-purple-500 transition">
+                            <span className="font-medium text-purple-300">Ch. {comic.latest_chapter}</span>
+                            <span className="text-zinc-500 italic text-[9px]">{formatTimeAgo(comic.latest_chapter_time)}</span>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full py-10 text-center text-zinc-500 border border-dashed border-zinc-800 rounded-lg text-xs">
+                    Tidak ada komik mirror saat ini.
+                  </div>
+                )}
+              </div>
+            </section>
+
           </div>
 
           {/* KOLOM KANAN (Sidebar) */}
@@ -414,10 +488,9 @@ export default function HomePage() {
                   <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" /> Populer Minggu Ini
                 </h2>
               </div>
-              
               <div className="flex flex-col gap-3">
                 {home?.popular && home.popular.length > 0 ? (
-                  home.popular.map((comic, index) => (
+                  home.popular.slice(0, 7).map((comic, index) => (
                     <Link href={`/comic/${comic.manga_id}`} key={comic.manga_id} className="flex gap-3 group items-center">
                       <div className="text-xl font-bold text-zinc-700 italic w-5 text-center group-hover:text-purple-500 transition">
                         {index + 1}
@@ -444,9 +517,7 @@ export default function HomePage() {
                     </Link>
                   ))
                 ) : (
-                  <div className="py-6 flex flex-col items-center justify-center border border-dashed border-zinc-800 rounded-lg text-zinc-500">
-                    <p className="text-[11px]">Data populer kosong.</p>
-                  </div>
+                  <div className="py-6 text-center text-zinc-500 text-[11px]">Data populer kosong.</div>
                 )}
               </div>
             </div>
@@ -458,18 +529,14 @@ export default function HomePage() {
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {genresList.map((genre) => (
-                  <Link 
-                    href={`/genre/${genre.toLowerCase()}`} 
-                    key={genre} 
-                    className="text-[11px] font-medium bg-[#0f0f11] border border-zinc-800/80 text-zinc-400 hover:text-white hover:border-purple-500 hover:bg-purple-500/20 px-2.5 py-1 rounded-md transition-all duration-200"
-                  >
+                  <Link href={`/genre/${genre.toLowerCase()}`} key={genre} className="text-[11px] font-medium bg-[#0f0f11] border border-zinc-800/80 text-zinc-400 hover:text-white hover:border-purple-500 hover:bg-purple-500/20 px-2.5 py-1 rounded-md transition-all duration-200">
                     {genre}
                   </Link>
                 ))}
               </div>
             </div>
 
-            {/* Widget Komunitas / Komentar Teratas */}
+            {/* Widget Komentar */}
             <div className="bg-[#16151a] rounded-xl border border-zinc-800 p-4">
               <div className="border-b border-purple-900/30 pb-2 mb-4">
                 <h2 className="text-[15px] font-bold text-white uppercase tracking-wider flex items-center gap-2">
@@ -493,7 +560,7 @@ export default function HomePage() {
                       </p>
                       <div className="flex items-center gap-1 mt-2 text-[10px] text-zinc-400">
                         <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500/20" /> 
-                        <span className="font-semibold text-zinc-300">{comment.likes.toLocaleString('id-ID')}</span> <span className="text-zinc-500">Suka</span>
+                        <span className="font-semibold text-zinc-300">{comment.likes.toLocaleString('id-ID')}</span>
                       </div>
                     </div>
                   </div>
@@ -501,7 +568,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Widget Papan Peringkat (Leaderboard) */}
+            {/* Widget Leaderboard */}
             <div className="bg-[#16151a] rounded-xl border border-zinc-800 p-4 sticky top-20 shadow-[0_0_20px_rgba(0,0,0,0.5)]">
               <div className="border-b border-purple-900/30 pb-2 mb-4">
                 <h2 className="text-[15px] font-bold text-white uppercase tracking-wider flex items-center gap-2">
@@ -512,23 +579,16 @@ export default function HomePage() {
                 {communityLeaders.map((leader) => (
                   <div key={leader.id} className="flex items-center gap-3 bg-[#0f0f11] border border-zinc-800/80 p-2.5 rounded-lg relative overflow-hidden">
                     <div className={`absolute top-0 left-0 w-1 h-full ${leader.bg}`}></div>
-                    
                     <div className="relative">
                       <img src={leader.avatar} alt={leader.name} className="w-10 h-10 rounded-lg object-cover border border-zinc-700" />
                       <div className={`absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full ${leader.bg} flex items-center justify-center border border-[#16151a]`}>
                         <Star className={`w-3 h-3 ${leader.color} fill-current`} />
                       </div>
                     </div>
-                    
                     <div className="flex-1 min-w-0">
                       <p className="text-[10px] text-zinc-400 font-semibold mb-0.5 uppercase tracking-wide">{leader.category}</p>
                       <h4 className="text-xs font-bold text-zinc-200 truncate">{leader.name}</h4>
                       <p className={`text-[11px] font-bold ${leader.color} mt-0.5`}>{leader.value}</p>
-                    </div>
-                    
-                    <div className="shrink-0 flex flex-col items-center">
-                      <Trophy className="w-4 h-4 text-yellow-500 fill-yellow-500/20 mb-0.5" />
-                      <span className="text-[9px] font-bold text-zinc-500">Rank #1</span>
                     </div>
                   </div>
                 ))}
@@ -546,7 +606,7 @@ export default function HomePage() {
             STYNX<span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">VEIL</span>
           </Link>
           <p className="max-w-2xl text-[13px] leading-relaxed">
-            Stynxveil adalah website baca komik online gratis berbahasa Indonesia. Kami memiliki ribuan koleksi komik manga, manhwa, dan manhua yang di-update setiap hari. Semua komik di website ini hanya preview dari komik aslinya.
+            Stynxveil adalah website baca komik online gratis berbahasa Indonesia. Semua komik di website ini hanya preview dari komik aslinya.
           </p>
           <p className="mt-2 text-[11px]">© {new Date().getFullYear()} Stynxveil. All Rights Reserved.</p>
         </div>
