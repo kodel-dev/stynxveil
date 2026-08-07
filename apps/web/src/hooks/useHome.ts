@@ -1,44 +1,49 @@
-// apps/web/src/hooks/useHome.ts
-import { useState, useEffect } from 'react';
+"use client";
+
+import { useEffect, useState } from "react";
+import { getHome } from "@/lib/api/shinigami";
+import { HomeResponse } from "@/types/manga";
 
 export function useHome() {
-  const [home, setHome] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setLoading(true);
-        
-        // Mengambil data langsung dari backend lokal Anda, atau Anda bisa arahkan langsung ke mirror aktif jika diperlukan
-        const res = await fetch('http://localhost:5000/comic/shinigami/home');
-        
-        if (!res.ok) throw new Error('Gagal mengambil data dari server');
-        
-        const json = await res.json();
-        
-        // Otomatis memastikan seluruh data dari Shinigami berlabel Mirror
-        if (json && json.data) {
-          const markMirror = (list: any[]) => Array.isArray(list) ? list.map(item => ({ ...item, type: 'Mirror' })) : [];
-          
-          json.data.latest = markMirror(json.data.latest);
-          json.data.recommended = markMirror(json.data.recommended);
-          json.data.popular = markMirror(json.data.popular);
-          json.data.mirrorComics = markMirror(json.data.mirrorComics);
-          json.data.projectComics = json.data.projectComics || [];
-        }
+    const [home,setHome]=useState<HomeResponse>();
 
-        setHome(json.data);
-      } catch (err: any) {
-        setError(err.message || 'Terjadi kesalahan');
-      } finally {
-        setLoading(false);
-      }
-    }
+    const [loading,setLoading]=useState(true);
 
-    fetchData();
-  }, []);
+    const [error,setError]=useState("");
 
-  return { home, loading, error };
+    useEffect(()=>{
+
+        getHome()
+
+        .then(res=>{
+
+            setHome(res);
+
+        })
+
+        .catch(e=>{
+
+            setError(e.message);
+
+        })
+
+        .finally(()=>{
+
+            setLoading(false);
+
+        });
+
+    },[]);
+
+    return {
+
+        home,
+
+        loading,
+
+        error
+
+    };
+
 }

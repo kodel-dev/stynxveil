@@ -1,1 +1,18 @@
 node_modules
+
+# env files - never commit real secrets, use .env.example as template
+.env
+.env.local
+.env.*.local
+
+# build output
+dist
+build
+.next
+out
+coverage
+
+# misc
+.DS_Store
+*.log
+.turbo
