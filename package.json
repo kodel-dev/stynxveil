@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-  "dev": "pnpm --filter web dev",
-  "build": "pnpm --filter web build",
-  "start": "pnpm --filter web start"
-},
+    "dev": "concurrently \"pnpm --filter api start:dev\" \"pnpm --filter web dev\"",
+    "build": "pnpm --filter api build && pnpm --filter web build",
+    "start": "concurrently \"pnpm --filter api start:prod\" \"pnpm --filter web start\""
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
