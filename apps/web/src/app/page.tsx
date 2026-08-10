@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { 
   Flame, Clock, Eye, ChevronRight, ChevronLeft, 
-  FolderOpen, Globe2, Map as MapIcon, MapPin, Compass, Loader2
+  FolderOpen, Globe2, Map as MapIcon, MapPin, Compass, Loader2, Star
 } from 'lucide-react';
 import { useHome } from "@/hooks/useHome";
 import { Manga } from "@/types/manga";
