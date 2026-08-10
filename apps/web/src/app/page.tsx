@@ -596,6 +596,32 @@ export default function HomePage() {
                 ))}
               </div>
             </section>
+            
+            {/* PERINGKAT PEMBACA */}
+            <section className="bg-[#121115] rounded-xl border border-zinc-800 p-4 shadow-[0_4px_15px_rgba(0,0,0,0.5)]">
+              <div className="border-b border-purple-900/30 pb-2 mb-4">
+                <h2 className="text-[15px] font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-yellow-400" /> Peringkat Pembaca
+                </h2>
+              </div>
+              <div className="flex flex-col gap-3">
+                {communityLeaders.map((leader, index) => (
+                  <div key={leader.id} className={`flex items-center gap-3 p-3 rounded-lg border border-zinc-800/50 ${leader.bg}`}>
+                    <div className="relative">
+                      <img src={leader.avatar} alt={leader.name} className="w-10 h-10 rounded-full object-cover border-2 border-zinc-700" loading="lazy" />
+                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-zinc-900 rounded-full flex items-center justify-center border border-zinc-700 text-[10px] font-bold text-white">
+                        {index + 1}
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold mb-0.5">{leader.category}</p>
+                      <p className="text-sm font-bold text-white truncate">{leader.name}</p>
+                      <p className={`text-xs font-medium mt-0.5 ${leader.color}`}>{leader.value}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
           </aside>
         </div>
       </main>
