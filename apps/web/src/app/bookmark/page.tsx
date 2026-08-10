@@ -87,47 +87,7 @@ export default function BookmarkPage() {
   return (
     <div className="min-h-screen bg-[#0f0f11] text-zinc-300 font-sans flex flex-col">
       
-      {/* 1. NAVBAR */}
-      <nav className="sticky top-0 z-50 bg-[#16151a]/95 backdrop-blur-sm border-b border-zinc-800 shadow-md">
-        <div className="max-w-[1400px] mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button className="lg:hidden text-zinc-400 hover:text-white"><Menu className="w-6 h-6" /></button>
-            <Link href="/" className="text-2xl font-extrabold tracking-tighter text-white">
-              STYNX<span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">VEIL</span>
-            </Link>
-          </div>
 
-          <div className="hidden lg:flex items-center gap-6 font-medium text-sm">
-            <Link href="/" className="text-zinc-400 hover:text-purple-400 transition">Beranda</Link>
-            <Link href="/daftar-komik" className="text-zinc-400 hover:text-purple-400 transition">Daftar Komik</Link>
-            <Link href="/project" className="text-zinc-400 hover:text-purple-400 transition">Project Kami</Link>
-            {/* Navigasi Bookmark Aktif */}
-            <Link href="/bookmark" className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-bold transition border-b-2 border-purple-500 pb-1 flex items-center gap-1">
-              <BookMarked className="w-4 h-4 text-purple-500" /> Bookmark
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center bg-[#0f0f11] rounded-md px-3 py-1.5 border border-zinc-800 focus-within:border-purple-500 transition w-64">
-              <input 
-                type="text" 
-                placeholder="Cari komik..." 
-                className="bg-transparent border-none outline-none text-sm w-full text-zinc-200"
-              />
-              <Search className="w-4 h-4 text-zinc-500" />
-            </div>
-
-            {/* Tombol Login */}
-            <button 
-              onClick={() => setIsLoggedIn(!isLoggedIn)}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white px-4 py-1.5 rounded-md text-xs font-semibold transition flex items-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(147,51,234,0.3)]"
-            >
-              <User className="w-4 h-4" /> 
-              <span>{isLoggedIn ? 'Profil Saya' : 'Masuk / Daftar'}</span>
-            </button>
-          </div>
-        </div>
-      </nav>
 
       {/* 2. MAIN CONTENT AREA */}
       <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 py-8">

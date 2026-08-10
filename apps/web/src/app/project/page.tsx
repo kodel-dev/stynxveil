@@ -25,17 +25,19 @@ const projectComics: Comic[] = Array.from({ length: 18 }).map((_, i) => {
   const statuses: ('Ongoing' | 'Completed')[] = ['Ongoing', 'Ongoing', 'Completed'];
   const allGenres = ['Action', 'Fantasy', 'System', 'Martial Arts', 'Overpowered', 'Reincarnation'];
   
-  const shuffledGenres = allGenres.sort(() => 0.5 - Math.random()).slice(0, 3);
+  // Deterministic slice instead of Math.random
+  const startIndex = i % 3;
+  const slicedGenres = allGenres.slice(startIndex, startIndex + 3);
 
   return {
     id: i + 200,
     title: `Project Stynxveil Ke-${i + 1} Kualitas HD`,
     type: types[i % 3],
     status: statuses[i % 3],
-    rating: parseFloat((Math.random() * 1.5 + 8.5).toFixed(1)), // Rating umumnya lebih tinggi untuk project sendiri
-    chapter: `Ch. ${Math.floor(Math.random() * 150) + 5}`,
-    views: `${(Math.random() * 900 + 200).toFixed(0)}K`,
-    genres: shuffledGenres,
+    rating: parseFloat((((i % 5) * 0.3) + 8.5).toFixed(1)), // Deterministic rating
+    chapter: `Ch. ${(i * 7) % 150 + 5}`, // Deterministic chapter
+    views: `${((i * 13) % 900 + 200).toFixed(0)}K`, // Deterministic views
+    genres: slicedGenres,
     cover: `https://picsum.photos/seed/stynxproject${i}/300/400`
   };
 });
@@ -88,37 +90,7 @@ export default function ProjectPage() {
   return (
     <div className="min-h-screen bg-[#0f0f11] text-zinc-300 font-sans flex flex-col">
       
-      {/* 1. NAVBAR */}
-      <nav className="sticky top-0 z-50 bg-[#16151a]/95 backdrop-blur-sm border-b border-zinc-800 shadow-md">
-        <div className="max-w-[1400px] mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button className="lg:hidden text-zinc-400 hover:text-white"><Menu className="w-6 h-6" /></button>
-            <Link href="/" className="text-2xl font-extrabold tracking-tighter text-white">
-              STYNX<span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">VEIL</span>
-            </Link>
-          </div>
 
-          <div className="hidden lg:flex items-center gap-6 font-medium text-sm">
-            <Link href="/" className="text-zinc-400 hover:text-purple-400 transition">Beranda</Link>
-            <Link href="/daftar-komik" className="text-zinc-400 hover:text-purple-400 transition">Daftar Komik</Link>
-            {/* Navigasi Project Kami Aktif */}
-            <Link href="/project" className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-bold transition border-b-2 border-purple-500 pb-1">Project Kami</Link>
-            <Link href="/bookmark" className="text-zinc-400 hover:text-purple-400 transition flex items-center gap-1">
-              <BookMarked className="w-4 h-4" /> Bookmark
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => setIsLoggedIn(!isLoggedIn)}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white px-4 py-1.5 rounded-md text-xs font-semibold transition flex items-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(147,51,234,0.3)]"
-            >
-              <User className="w-4 h-4" /> 
-              <span>{isLoggedIn ? 'Profil Saya' : 'Masuk / Daftar'}</span>
-            </button>
-          </div>
-        </div>
-      </nav>
 
       {/* 2. HEADER PROJECT KAMI */}
       <div className="bg-[#16151a] border-b border-purple-900/30 py-12 relative overflow-hidden">
